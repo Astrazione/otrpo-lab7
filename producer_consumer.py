@@ -19,6 +19,8 @@ RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
 QUEUE_NAME = os.getenv("QUEUE_NAME")
 TIMEOUT = 30  # Таймаут ожидания в секундах
 
+used_links: set = set()
+
 
 def get_absolute_url(base_url, link):
     """Конвертирует относительные ссылки в абсолютные"""
@@ -47,10 +49,12 @@ async def extract_links(url):
             if response.status != 200:
                 logging.warning(f"Ошибка загрузки: {url}")
                 return []
-            
+
             html = await response.text()
             soup = BeautifulSoup(html, "html.parser")
-            title = soup.find('title').text
+            title_element = soup.find('title')
+            title = None if title_element is None else title_element.text
+
             logging.info(f"Обработана ссылка: {url}\tTitle: {title}")
             links = []
 
@@ -59,9 +63,13 @@ async def extract_links(url):
 
                 if not link or link.startswith('#') or link.startswith(':'):
                     continue
-
                 abs_url = get_absolute_url(url, link)
+
+                if abs_url in used_links:
+                    continue
+
                 if urlparse(abs_url).netloc == domain:
+                    used_links.add(abs_url)
                     links.append(abs_url)
                     logging.info(f"Найдено: {tag.name}, {link}")
             return links
