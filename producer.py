@@ -81,13 +81,13 @@ def send_to_queue(links):
 
 
 async def main():
-    # import sys
-    # if len(sys.argv) < 2:
-    #     logging.error("Использование: python script.py <URL>")
-    #     return
+    import sys
+    if len(sys.argv) < 2:
+        logging.error("Использование: python script.py <URL>")
+        return
 
-    # url = sys.argv[1]
-    url = 'https://en.wikipedia.org/wiki/Website'
+    url = sys.argv[1]
+    # url = 'https://en.wikipedia.org/wiki/Website'
 
     links = await extract_links(url)
     if len(links) > 0:
